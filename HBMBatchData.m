@@ -44,13 +44,6 @@ clearvars batch
 % rind = find(endcap8 > 0.885);
 % batch8(rind) = [];
 
-% load('...\Batch_data\2019-03-20_batchdata_updated_struct_errorcorrect.mat')  %batch9    
-% batch9 = batch;
-% numBat7 = size(batch9,2);
-% clearvars batch
-
-% clearvars batch
-
 % batch_combined = [batch1, batch2, batch8, batch9]; 
 % numBat = numBat1 + numBat2 + numBat8;
 
