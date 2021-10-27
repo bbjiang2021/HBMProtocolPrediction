@@ -5,8 +5,6 @@ clear; close all; clc
 batch_combined = [batch1, batch2, batch8, batch9]; 
 numBat = numBat1 + numBat2 + numBat8 + numBat9;
 
-clearvars -except batch_combined batch1 batch2 batch8 batch9 numBat1 numBat2 numBat8 numBat9 numBat
-
 %%
 %extract the number of cycles to 0.88
 bat_label = zeros(numBat,1);
