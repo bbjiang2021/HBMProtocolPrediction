@@ -1,56 +1,62 @@
-function [deltaVc, Qclin] = HBMChargingFeatProc(batch,batteryNum,cycleList)
+clear; close all; clc
 
-mod_policy = batteryNum;
-list = cycleList;
+% load batch data
 
-for i = 1:2
-cycle = list(i);
-Qc_beg = 0;
-Qc_end(i) = max(batch(mod_policy).cycles(cycle).Qc);
-ind_first = find(batch(mod_policy).cycles(cycle).Qc>(Qc_beg+1e-2),1,'first');
-ind_last  = find(batch(mod_policy).cycles(cycle).Qc>(min(Qc_end(i),1.1)-1e-3),1,'first'); 
-Q_exp{i} = batch(mod_policy).cycles(cycle).Qc(ind_first:ind_last);
-V_exp{i} = batch(mod_policy).cycles(cycle).V(ind_first:ind_last);
-[Q_exp_unique{i}, ia, ic] = unique(Q_exp{i});
-V_exp_unique{i} = V_exp{i}(ia);
-end
-Q_exp_int = linspace(0,min(max(Qc_end),1.1),1e4);
+batch_combined = [batch1, batch2, batch8, batch9]; 
+numBat = numBat1 + numBat2 + numBat8 + numBat9;
 
-for i = 1:2
-V_exp_int{i} = interp1(Q_exp_unique{i},V_exp_unique{i},Q_exp_int,'linear','extrap');
-end
+clearvars -except batch_combined batch1 batch2 batch8 batch9 numBat1 numBat2 numBat8 numBat9 numBat
 
-% dVdQ filter 1
-for i = 1:2
-    temp_dVdQ = dVdQ{i};
-    for j = 2:length(temp_dVdQ)
-        if abs(temp_dVdQ(j)/temp_dVdQ(j-1))>10
-            temp_dVdQ(j) = temp_dVdQ(j-1);
-        end
+%%
+%extract the number of cycles to 0.88
+bat_label = zeros(numBat,1);
+for i = 1:numBat
+    
+    if batch_combined(i).summary.QDischarge(end) < 0.88
+        bat_label(i) = find(batch_combined(i).summary.QDischarge < 0.88,1);
+        
+    else
+        bat_label(i) = size(batch_combined(i).cycles,2) + 1;
     end
-    dVdQ_proc{i} = temp_dVdQ;
+    
 end
-% dQdV filter 2
-for i = 1:2
-    temp_dQdV = dQdV{i};
-    for j = 2:length(temp_dQdV)
-        if abs(temp_dQdV(j)/temp_dQdV(j-1))>10
-            temp_dQdV(j) = temp_dQdV(j-1);
-        end
+
+max_Q = log10(1200);
+min_Q = log10(500);
+
+bat_label = log10(bat_label);
+
+colormap('jet')
+CM = colormap('jet');
+
+%% specify font size
+fs = 11;
+
+
+%% 
+figure()
+color_ind = ceil((bat_label(1) - min_Q)./(max_Q - min_Q)*64);
+plot(batch_combined(1).summary.QDischarge,'.','MarkerSize',8,'Color',CM(color_ind,:))
+for i = numBat:-1:1%:numBat
+    hold on
+    if i == 1
+        %skip
+     
+    elseif length(batch_combined(i).summary.QDischarge) < 200
+        color_ind = ceil((bat_label(i) - min_Q)./(max_Q - min_Q)*64);
+        plot(batch_combined(i).summary.QDischarge,'.','MarkerSize',8,'Color',CM(color_ind,:))
+    elseif any(abs(diff(batch_combined(i).summary.QDischarge(200:275))) > 1e-2)
+        color_ind = ceil((bat_label(i) - min_Q)./(max_Q - min_Q)*64);
+        p_ind = [2:246,252:length(batch_combined(i).summary.QDischarge)];
+        plot(p_ind,batch_combined(i).summary.QDischarge(p_ind),'.','MarkerSize',8,'Color',CM(color_ind,:))
+    else
+        color_ind = ceil((bat_label(i) - min_Q)./(max_Q - min_Q)*64);
+        plot(batch_combined(i).summary.QDischarge,'.','MarkerSize',8,'Color',CM(color_ind,:))
     end
-    dQdV_proc{i} = temp_dQdV;
+    xlim([0,1000])
+    ylim([0.88,1.1])
+    xlabel({'Cycle Number'})
+    ylabel('Discharge Capacity (Ah)')
+    box on
+    set(gca,'fontsize',fs)
 end
-
-deltaVc = V_exp_int{2}-V_exp_int{1};
-Qclin = Q_exp_int;
-
-end
-
-
-
-
-
-
-
-
-
