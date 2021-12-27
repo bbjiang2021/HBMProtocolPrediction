@@ -1,1 +1,1 @@
-% The code of HBM for cycling protocol prediction is available upon request to the lead contact Richard Braatz at braatz@mit.edu for the academic license.   The code of data processing is available without agreeing to a license.
+% The code of HBM for cycling protocol prediction is available upon request to B. Jiang at bbjiang@mit.edu for the academic license. The code of data processing is available without agreeing to a license.
